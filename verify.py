@@ -1,7 +1,9 @@
-"""Step 6. The verifier. The cases are written before the run, from the table, by hand."""
-from agent import ask
-from llm import RULE, SYSTEM, USED
-from tools import CARDS
+"""The verifier. The cases are written before the run, from the sheet, by hand.
+
+python verify.py    six cases. Two are there to fail
+"""
+from ask import RULE, SYSTEM, USED, ask
+from tools import CARDS, run_tool
 
 # Change this line to try a fix, then run again. First fix to try: SYSTEM + RULE
 SYSTEM_PROMPT = SYSTEM
@@ -59,7 +61,7 @@ def check(case: dict, out: dict) -> list[str]:
 
 passed = 0
 for case in CASES:
-    out = ask(case["question"], cards=CARDS, system=SYSTEM_PROMPT)
+    out = ask(case["question"], CARDS, run_tool, system=SYSTEM_PROMPT)
     wrong = check(case, out)
     passed += not wrong
     print("PASS" if not wrong else "FAIL", "", case["question"])

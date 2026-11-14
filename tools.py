@@ -1,5 +1,33 @@
-"""The deterministic side: two functions that read the curriculum sheet, and the cards that describe them to the model."""
-from data import fetch_lectures
+"""The deterministic side: two functions that read the curriculum sheet, and the cards that describe them to the model.
+
+python tools.py          just the functions, no model anywhere
+python tools.py serve    the same two tools at an address: an MCP server
+"""
+import csv
+import io
+import re
+import sys
+
+import requests
+
+# The public 100xEngineers Cohort 8 Google Sheet, one tab per track. The same sheet the map and the Tool Bench read.
+SHEET = "https://docs.google.com/spreadsheets/d/1Kg6T-dJWaYx_JCPiRk3u0nBuAQcsCVRDPj1NFKP4WzM/gviz/tq?tqx=out:csv&headers=0"
+TABS = {"no-code": "0", "code": "368290478"}                      # the tab ids in the sheet's address
+
+
+def fetch_lectures(track: str) -> list[dict]:
+    """Every lecture of one track: number, date, title, type and the tools cell, as written in the sheet."""
+    text = requests.get(SHEET + "&gid=" + TABS[track], timeout=10).text
+    lectures = []
+    for row in csv.reader(io.StringIO(text)):
+        numbered = re.match(r"(\d+)\.\s*(.+)", row[1]) if len(row) > 3 else None
+        if numbered:                                              # holidays and the hackathon have no number
+            lectures.append({"number": int(numbered.group(1)), "date": row[0], "title": numbered.group(2).strip(),
+                             "type": row[2], "tools": row[3].strip()})
+    return lectures
+
+
+# ---------------------------------------------------------------- the functions
 
 NOT_TOOLS = {"", "None", "TBD", "[TO NAME]", "Paper exercise"}    # what the sheet writes when no tool is named
 
@@ -31,6 +59,8 @@ def get_lecture(number: int, track: str) -> dict:
 
 FUNCTIONS = {"get_track_tools": get_track_tools, "get_lecture": get_lecture}
 
+# ---------------------------------------------------------------- the cards
+
 TRACK = {"type": "string", "description": "Which track: code or no-code."}
 
 TOOLS_CARD = {"type": "function", "function": {
@@ -61,3 +91,28 @@ def run_tool(name: str, arguments: dict) -> dict:
         return FUNCTIONS[name](**arguments)
     except Exception as e:
         return {"error": str(e)}
+
+
+# ---------------------------------------------------------------- MCP: the same tools, at an address
+
+def serve():
+    """Hands the same functions and the same cards to FastMCP. Nothing above this line changes."""
+    from fastmcp import FastMCP
+    from fastmcp.tools import FunctionTool
+
+    mcp = FastMCP("100x curriculum")
+    for card in CARDS:
+        card = card["function"]
+        mcp.add_tool(FunctionTool(fn=FUNCTIONS[card["name"]], name=card["name"],
+                                  description=card["description"], parameters=card["parameters"]))
+    # stateless_http and json_response keep every message a plain POST with a JSON answer, so you can read them.
+    mcp.run(transport="http", port=8000, stateless_http=True, json_response=True)
+
+
+if __name__ == "__main__":
+    if sys.argv[1:] == ["serve"]:
+        serve()                                                   # the address is http://localhost:8000/mcp
+    else:
+        print(get_track_tools("no-code"))
+        print(get_track_tools("code"))
+        print(get_lecture(13, "code"))
