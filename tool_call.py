@@ -4,14 +4,22 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+if not os.environ.get("GROQ_API_KEY"):
+    raise SystemExit("No GROQ_API_KEY found. Make a file called .env next to tool_call.py with one line: GROQ_API_KEY=your key")
 
 # 1. A plain Python function. It reads one track's tab of the public curriculum sheet.
 SHEET = "https://docs.google.com/spreadsheets/d/1Kg6T-dJWaYx_JCPiRk3u0nBuAQcsCVRDPj1NFKP4WzM/gviz/tq?tqx=out:csv&gid="
 TABS = {"code": "368290478", "no-code": "0"}
+NOT_SET = {"", "None", "TBD", "[TO NAME]"}   # the sheet's placeholders for "no tools yet"
 
 def get_lectures(track):
     rows = csv.reader(io.StringIO(requests.get(SHEET + TABS[track]).text))
-    return [row[1] + ": " + row[3] for row in rows if row[1][:1].isdigit()]
+    lectures = []
+    for row in rows:
+        if row[1][:1].isdigit():
+            title, tools = row[1].strip(), row[3].strip()
+            lectures.append(title if tools in NOT_SET else title + ": " + tools)
+    return lectures
 
 # 2. A card that tells the model this function exists.
 card = {"type": "function", "function": {

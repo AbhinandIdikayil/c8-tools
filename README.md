@@ -35,3 +35,12 @@ Leave it running. In a second terminal, ask the server what it offers, then call
 fastmcp list http://localhost:8000/mcp
 fastmcp call http://localhost:8000/mcp get_lectures track=code
 ```
+
+## If something goes wrong
+
+| You see | Fix |
+|---|---|
+| `No GROQ_API_KEY found` | Make the `.env` file from Setup, next to `tool_call.py` |
+| `429` from Groq | You hit the free rate limit. Wait a minute and run again |
+| `Port 8000 is already in use` | A server from an earlier run is still on. Press Ctrl+C in its terminal, or run `kill $(lsof -t -i:8000)` |
+| `Input should be 'code' or 'no-code'` | `track` only takes those two values |
