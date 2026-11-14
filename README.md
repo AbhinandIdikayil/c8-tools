@@ -147,7 +147,7 @@ The model reads only the card. First fill in the middle column. Then run each qu
 python tool_call.py "Which tools do we use in the seventh class?"
 ```
 
-If a row does not match, change one thing in the card and run it again. Edit this table in your fork: it is part of what you share.
+If a row does not match, change one thing in the card and run it again. Edit this table in your fork: it is part of what you submit.
 
 ## Part 2: the MCP server
 
@@ -232,12 +232,12 @@ Do it once more with data you care about: your own Google Sheet, a CSV file, a S
 2. Write its card, and five questions of your own for the table in step 6.
 3. Push, and call your new tool at the deployed address.
 
-## Share it
+## Submit it
 
 - The link to your fork, with the step 6 table filled in.
 - Your deployed address.
 
-Once you're done, share it on the Discord. We go through them in the office hour.
+Once you're done, submit it on the LMS. We go through them in the office hour.
 
 ## If something goes wrong
 
