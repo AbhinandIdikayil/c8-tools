@@ -17,4 +17,5 @@ def get_lectures(track: str) -> list[str]:
     return [row[1] + ": " + row[3] for row in rows if row[1][:1].isdigit()]
 
 # Any MCP client can now reach it at http://localhost:8000/mcp
-mcp.run(transport="http", port=8000)
+if __name__ == "__main__":
+    mcp.run(transport="http", port=8000)
