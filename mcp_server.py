@@ -26,13 +26,13 @@ def get_lecture(number: Annotated[int, "The lecture number, 1 to 19."]) -> dict:
 # Step 2. Write the card into the function itself: a docstring and a type hint.
 
 
-# Any app can now reach it at http://localhost:8000/mcp
+# Render requires the server to listen on all interfaces.
 if __name__ == "__main__":
     port = int(os.environ.get("PORT"))
 
-    if socket.socket().connect_ex(("127.0.0.1", port)) == 0:
+    if socket.socket().connect_ex(("0.0.0.0", port)) == 0:
         raise SystemExit(
             f"Port {port} is already in use, probably by a server you started earlier. "
             f"Stop it with Ctrl+C in its terminal, or run: kill $(lsof -t -i:{port})"
         )
-    mcp.run(transport="http", port=port)
+    mcp.run(transport="http", host="0.0.0.0", port=port)
