@@ -1,10 +1,13 @@
 """Part 2: the same tool on the sheet's side, as an MCP server.  Run: python mcp_server.py
 The steps are in README.md."""
 
-import csv, io, socket
+import csv, io, os, socket
 from typing import Annotated
 import requests
 from fastmcp import FastMCP
+from dotenv import load_dotenv
+
+load_dotenv()
 
 SHEET = "https://docs.google.com/spreadsheets/d/1Kg6T-dJWaYx_JCPiRk3u0nBuAQcsCVRDPj1NFKP4WzM/gviz/tq?tqx=out:csv&headers=0&gid=368290478"
 
@@ -25,9 +28,11 @@ def get_lecture(number: Annotated[int, "The lecture number, 1 to 19."]) -> dict:
 
 # Any app can now reach it at http://localhost:8000/mcp
 if __name__ == "__main__":
-    if socket.socket().connect_ex(("127.0.0.1", 8000)) == 0:
+    port = int(os.environ.get("PORT"))
+
+    if socket.socket().connect_ex(("127.0.0.1", port)) == 0:
         raise SystemExit(
-            "Port 8000 is already in use, probably by a server you started earlier. "
-            "Stop it with Ctrl+C in its terminal, or run: kill $(lsof -t -i:8000)"
+            f"Port {port} is already in use, probably by a server you started earlier. "
+            f"Stop it with Ctrl+C in its terminal, or run: kill $(lsof -t -i:{port})"
         )
-    mcp.run(transport="http", port=8000)
+    mcp.run(transport="http", port=port)
